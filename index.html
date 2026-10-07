@@ -4,17 +4,28 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Little Black Book</title>
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b1630">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Black Book">
+<meta property="og:title" content="Little Black Book">
+<meta property="og:description" content="Private notes. Stored on your device.">
+<meta property="og:image" content="https://fardeenprojects.github.io/Little-Black-Box/og-image.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f3f1f5;--card:#fff;--ink:#1d1a24;--mute:#6f6a7a;--line:#dedae6;--accent:#5b2a86;--accent-ink:#fff;--danger:#b3261e;
+:root{--bg:#f6ede0;--card:#fffaf1;--ink:#14213d;--mute:#6b5f4d;--line:#e2d0b2;--accent:#8c2f39;--accent-ink:#fff7ea;--warm:#a8651f;--danger:#a3262f;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17141c;--card:#221e2b;--ink:#efecf5;--mute:#9a94a8;--line:#352f42;--accent:#b98cf0;--accent-ink:#17141c;--danger:#ff8a80}}
-:root[data-theme="dark"]{--bg:#17141c;--card:#221e2b;--ink:#efecf5;--mute:#9a94a8;--line:#352f42;--accent:#b98cf0;--accent-ink:#17141c;--danger:#ff8a80}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1630;--card:#142348;--ink:#f6e8d0;--mute:#b9a98c;--line:#2b3f6e;--accent:#b0414c;--accent-ink:#fff7ea;--warm:#e8b86d;--danger:#ff9a8a}}
+:root[data-theme="dark"]{--bg:#0b1630;--card:#142348;--ink:#f6e8d0;--mute:#b9a98c;--line:#2b3f6e;--accent:#b0414c;--accent-ink:#fff7ea;--warm:#e8b86d;--danger:#ff9a8a}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Bricolage Grotesque',system-ui,-apple-system,Segoe UI,sans-serif;line-height:1.45}
 main{max-width:680px;margin:0 auto;padding:20px 16px 80px}
-h1{font-size:2rem;font-weight:800;margin:0 0 2px;letter-spacing:-.02em}
+h1{font-size:2rem;font-weight:800;margin:0 0 2px;letter-spacing:-.02em;color:var(--warm)}
 .sub{color:var(--mute);margin:0 0 18px;font-size:.9rem}
 .bar{display:flex;gap:8px;margin-bottom:14px}
 input,textarea,select{width:100%;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
@@ -24,10 +35,10 @@ button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(-
 button.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
 button.del{color:var(--danger)}
 .bar select{width:auto}
-.entry{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px}
+.entry{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:14px;padding:14px 16px;margin-bottom:10px}
 .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
 .name{font-weight:800;font-size:1.15rem}
-.date{color:var(--mute);font-size:.85rem;white-space:nowrap}
+.date{color:var(--warm);font-weight:600;font-size:.85rem;white-space:nowrap}
 .meta{color:var(--mute);font-size:.9rem;margin:2px 0 6px}
 .row{margin:4px 0;font-size:.95rem}
 .row b{font-weight:600}
@@ -42,6 +53,7 @@ label{display:block;font-size:.85rem;color:var(--mute);margin:10px 0 4px}
 .foot{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
 .tools{display:flex;gap:8px;margin-top:22px;flex-wrap:wrap}
 .note{color:var(--mute);font-size:.8rem;margin-top:10px}
+.row b{color:var(--warm)}
 .warn{display:none;align-items:center;justify-content:space-between;gap:10px;background:var(--card);border:1px solid var(--accent);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:.9rem}
 .warn.on{display:flex}
 </style>
