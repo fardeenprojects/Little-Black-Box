@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Little Black Book</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f1f5;--card:#fff;--ink:#1d1a24;--mute:#6f6a7a;--line:#dedae6;--accent:#5b2a86;--accent-ink:#fff;--danger:#b3261e;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17141c;--card:#221e2b;--ink:#efecf5;--mute:#9a94a8;--line:#352f42;--accent:#b98cf0;--accent-ink:#17141c;--danger:#ff8a80}}
+:root[data-theme="dark"]{--bg:#17141c;--card:#221e2b;--ink:#efecf5;--mute:#9a94a8;--line:#352f42;--accent:#b98cf0;--accent-ink:#17141c;--danger:#ff8a80}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Bricolage Grotesque',system-ui,-apple-system,Segoe UI,sans-serif;line-height:1.45}
+main{max-width:680px;margin:0 auto;padding:20px 16px 80px}
+h1{font-size:2rem;font-weight:800;margin:0 0 2px;letter-spacing:-.02em}
+.sub{color:var(--mute);margin:0 0 18px;font-size:.9rem}
+.bar{display:flex;gap:8px;margin-bottom:14px}
+input,textarea,select{width:100%;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+input:focus,textarea:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+textarea{min-height:84px;resize:vertical}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:9px 14px}
+button.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button.del{color:var(--danger)}
+.bar select{width:auto}
+.entry{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px}
+.top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.name{font-weight:800;font-size:1.15rem}
+.date{color:var(--mute);font-size:.85rem;white-space:nowrap}
+.meta{color:var(--mute);font-size:.9rem;margin:2px 0 6px}
+.row{margin:4px 0;font-size:.95rem}
+.row b{font-weight:600}
+.acts{display:flex;gap:8px;margin-top:10px}
+.acts button{padding:5px 12px;font-size:.85rem}
+.empty{text-align:center;color:var(--mute);padding:40px 10px;border:1px dashed var(--line);border-radius:14px}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--bg);color:var(--ink);width:min(560px,94vw);padding:18px}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+label{display:block;font-size:.85rem;color:var(--mute);margin:10px 0 4px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.two{grid-template-columns:1fr}}
+.foot{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.tools{display:flex;gap:8px;margin-top:22px;flex-wrap:wrap}
+.note{color:var(--mute);font-size:.8rem;margin-top:10px}
+.warn{display:none;align-items:center;justify-content:space-between;gap:10px;background:var(--card);border:1px solid var(--accent);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:.9rem}
+.warn.on{display:flex}
+</style>
+</head>
+<body>
+<main>
+  <h1>Little Black Book</h1>
+  <p class="sub" id="count"></p>
+  <div class="warn" id="warn"><span id="warn-t"></span><button class="pri" id="warn-b">Back up now</button></div>
+  <div class="bar">
+    <input id="q" type="search" placeholder="Search name, area, notes" aria-label="Search">
+    <select id="sort" aria-label="Sort"><option value="new">Newest</option><option value="old">Oldest</option><option value="az">A to Z</option></select>
+    <button class="pri" id="add">Add</button>
+  </div>
+  <div id="list"></div>
+  <div class="tools">
+    <button id="exp">Back up (save to Drive)</button>
+    <button id="imp">Import backup</button>
+    <input type="file" id="file" accept="application/json" hidden>
+  </div>
+  <p class="note">Entries live only in this browser on this device. Clearing site data erases them, so export a backup now and then.</p>
+</main>
+
+<dialog id="dlg">
+  <div id="dt" style="font-weight:800;font-size:1.2rem">New entry</div>
+  <label for="f-name">Name</label><input id="f-name" autocomplete="off">
+  <div class="two">
+    <div><label for="f-date">Date</label><input id="f-date" type="date"></div>
+    <div><label for="f-loc">Lives in</label><input id="f-loc" placeholder="Area or city" autocomplete="off"></div>
+  </div>
+  <label for="f-pref">Preferences</label><textarea id="f-pref" placeholder="Likes, dislikes, boundaries"></textarea>
+  <label for="f-notes">Notes</label><textarea id="f-notes"></textarea>
+  <div class="foot"><button id="cancel">Cancel</button><button class="pri" id="save">Save</button></div>
+</dialog>
+
+<script>
+(function(){
+var KEY='lbb:entries', data=[], editId=null;
+var $=function(i){return document.getElementById(i)};
+function load(){try{var r=localStorage.getItem(KEY);data=r?JSON.parse(r):[]}catch(e){data=[]}}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){alert('Could not save in this browser. Export a backup instead.')}}
+function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function fmt(d){if(!d)return'';var p=d.split('-');var t=new Date(p[0],p[1]-1,p[2]);return isNaN(t)?d:t.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}
+function render(){
+  var q=$('q').value.trim().toLowerCase(), s=$('sort').value;
+  var rows=data.filter(function(e){return !q||[e.name,e.loc,e.pref,e.notes].join(' ').toLowerCase().indexOf(q)>-1});
+  rows.sort(function(a,b){
+    if(s==='az')return a.name.localeCompare(b.name);
+    var r=(b.date||'').localeCompare(a.date||'');return s==='old'?-r:r});
+  $('count').textContent=data.length+(data.length===1?' entry':' entries');checkWarn();
+  if(!rows.length){$('list').innerHTML='<div class="empty">'+(data.length?'No matches. Try a different search.':'Nothing here yet. Tap Add to log your first entry.')+'</div>';return}
+  $('list').innerHTML=rows.map(function(e){
+    return '<div class="entry"><div class="top"><span class="name">'+esc(e.name)+'</span><span class="date">'+esc(fmt(e.date))+'</span></div>'
+    +(e.loc?'<div class="meta">Lives in '+esc(e.loc)+'</div>':'')
+    +(e.pref?'<div class="row"><b>Preferences:</b> '+esc(e.pref)+'</div>':'')
+    +(e.notes?'<div class="row"><b>Notes:</b> '+esc(e.notes)+'</div>':'')
+    +'<div class="acts"><button data-e="'+e.id+'">Edit</button><button class="del" data-d="'+e.id+'">Delete</button></div></div>'}).join('')}
+function open(e){
+  editId=e?e.id:null;$('dt').textContent=e?'Edit entry':'New entry';
+  $('f-name').value=e?e.name:'';$('f-date').value=e?e.date:new Date().toISOString().slice(0,10);
+  $('f-loc').value=e?e.loc:'';$('f-pref').value=e?e.pref:'';$('f-notes').value=e?e.notes:'';
+  $('dlg').showModal();$('f-name').focus()}
+$('add').onclick=function(){open(null)};
+$('cancel').onclick=function(){$('dlg').close()};
+$('save').onclick=function(){
+  var n=$('f-name').value.trim();if(!n){$('f-name').focus();return}
+  var o={name:n,date:$('f-date').value,loc:$('f-loc').value.trim(),pref:$('f-pref').value.trim(),notes:$('f-notes').value.trim()};
+  if(editId){data=data.map(function(e){return e.id===editId?Object.assign({id:editId},o):e})}
+  else{o.id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);data.push(o)}
+  persist();$('dlg').close();render()};
+$('list').onclick=function(ev){
+  var t=ev.target;
+  if(t.dataset.e){open(data.filter(function(e){return e.id===t.dataset.e})[0])}
+  if(t.dataset.d&&confirm('Delete this entry? This cannot be undone.')){data=data.filter(function(e){return e.id!==t.dataset.d});persist();render()}};
+$('q').oninput=render;$('sort').onchange=render;
+var LAST='lbb:last';
+function lastBackup(){try{return parseInt(localStorage.getItem(LAST)||'0',10)}catch(e){return 0}}
+function markBackup(){try{localStorage.setItem(LAST,String(Date.now()))}catch(e){}checkWarn()}
+function checkWarn(){
+  var l=lastBackup(),days=l?Math.floor((Date.now()-l)/864e5):null,w=$('warn');
+  if(data.length&&(l===0||days>=7)){
+    $('warn-t').textContent=l===0?'No backup yet. Save one to Drive.':'Last backup was '+days+' days ago.';
+    w.classList.add('on')}else w.classList.remove('on')}
+function backup(){
+  var name='little-black-book-backup.json',json=JSON.stringify(data,null,2);
+  var file=new File([json],name,{type:'application/json'});
+  function dl(){var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([json],{type:'application/json'}));a.download=name;a.click();markBackup()}
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    navigator.share({files:[file],title:'Little Black Book backup'}).then(markBackup).catch(function(e){if(e&&e.name!=='AbortError')dl()})
+  }else dl()}
+$('exp').onclick=backup;$('warn-b').onclick=backup;
+$('imp').onclick=function(){$('file').click()};
+$('file').onchange=function(){
+  var f=this.files[0];if(!f)return;var r=new FileReader();
+  r.onload=function(){try{var d=JSON.parse(r.result);if(!Array.isArray(d))throw 0;
+    if(confirm('Replace current entries with '+d.length+' from this backup?')){data=d;persist();render()}}
+    catch(e){alert('That file is not a valid backup.')}};
+  r.readAsText(f);this.value=''};
+load();render();
+})();
+</script>
+</body>
+</html>
